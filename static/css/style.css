@@ -1,0 +1,156 @@
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(135deg, #eef2f7, #dce7f2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2c3e50;
+}
+
+/* ---------- Card (Username Page) ---------- */
+
+.card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 14px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+.card h1 {
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin-bottom: 25px;
+}
+
+input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccd6dd;
+  margin-bottom: 20px;
+  font-size: 15px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #5dade2;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #5dade2;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #4a9bd8;
+}
+
+/* ---------- Chat Page ---------- */
+
+.chat-container {
+  width: 420px;
+  height: 600px;
+  background: #ffffff;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.chat-header {
+  padding: 16px;
+  background: #f7f9fc;
+  border-bottom: 1px solid #e1e7ec;
+  font-weight: 600;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  flex:1;
+  padding: 16px;
+  overflow-y: auto;
+  background: #fdfefe;
+}
+
+.message {
+  max-width: 75%;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.message.own {
+  border-radius: 35px 35px 35px  0px;
+  background: #007AFF;
+  color:white;
+  align-self: flex-start;
+}
+
+.message.other {
+  border-radius: 35px 35px 0px 35px;
+  background: #34C759;
+  align-self: flex-end;
+}
+
+.chat-input {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid #e1e7ec;
+}
+
+.chat-input input {
+  flex: 1;
+  margin: 0;
+  margin-right: 10px;
+}
+
+#send-btn{
+  width: 20%;
+}
+
+#floatingBox {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #2c3e50;
+  color: #ffffff;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 9999;
+}
+
+/* Visible state */
+#floatingBox.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Welcome | Chat App</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css')}}" />
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome 👋</h1>
+    <p class="subtitle">Enter your username to start chatting</p>
+    <form action="/" method="post">
+
+        <input 
+        type="text" 
+        id="username"
+        name="username" 
+        placeholder="Your username"
+        maxlength="20"
+        />
+        
+        <button type="submit">Continue</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css')}}" />
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+
+</head>
+
+<body>
+    <div class="chat-container">
+        <header class="chat-header">
+            <span id="userDisplay">Login in as <span id="username">{{username}}</span></span>
+        </header>
+
+        <div class="chat-messages" id="messages"></div>
+
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type your message..." />
+            <button id="send-btn" onclick="sendMessage()" type="submit">Send</button>
+        </div>
+    </div>
+    <div id="floatingBox">
+        
+    </div>
+
+
+    <script>
+        const inputfield = document.getElementById('messageInput')
+        const username = document.getElementById('username').textContent.trim()
+        console.log(username)
+        const socket = io();
+
+        function push_on_screen(msg, username, self = false) {
+            const msgDiv = document.createElement("div");
+            if (self == false) {
+                msgDiv.className = "message other";
+            } else {
+                msgDiv.className = "message own";
+            }
+            msgDiv.innerHTML = `<strong>${username}</strong><br>${msg}`;
+
+            document.getElementById("messages").appendChild(msgDiv);
+        }
+
+        inputfield.addEventListener('keyup',(event) => {
+            console.log("Typing");
+            socket.emit('user-typing',username);
+
+        });
+
+        inputfield.addEventListener('keydown', (event) => {
+            if (event.key == 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const msg = inputfield.value.trim()
+            inputfield.value = ""
+            if(msg!=""){
+
+                socket.emit('send_msg', msg)
+            }
+        }
+
+        socket.on('recv', (msg) => {
+            if (username == msg.username) {
+                self = true;
+            } else {
+                self = false;
+            }
+            console.log(msg)
+            push_on_screen(msg.msg, msg.username, self)
+        })
+
+
+        socket.on('connection-found', (data) => {
+            const box = document.getElementById("floatingBox");
+            box.classList.add('show')
+            if (data['type']=='typing'){
+                box.textContent = "🙌 " + data['user'] + " is typing !"
+            }else{
+
+                box.textContent = "😎 " + data['user'] + " Join the Chat!!";
+            }
+            setTimeout(()=>{
+                box.classList.remove('show')
+            },5000)
+        })
+    </script>
+</body>
+
+</html>
