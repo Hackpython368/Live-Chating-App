@@ -103,14 +103,15 @@ button:hover {
 
 .message.own {
   border-radius: 35px 35px 35px  0px;
-  background: #007AFF;
-  color:white;
+  background: #E3F2FD;
+  color: #0D47A1;
   align-self: flex-start;
 }
 
 .message.other {
   border-radius: 35px 35px 0px 35px;
-  background: #34C759;
+  background: #E8F5E9;
+  color: #1B5E20;
   align-self: flex-end;
 }
 

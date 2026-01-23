@@ -2,7 +2,6 @@ from flask import Flask,render_template,redirect,request
 from flask_socketio import SocketIO,emit
 from flask_login import login_required,LoginManager,UserMixin,current_user,login_user
 
-count = 0
 
 
 
@@ -43,8 +42,6 @@ def login():
 
         login_user(user)
 
-        print("Found POST request")
-
         return redirect('/chat')
     return render_template('index.html')
 
@@ -53,20 +50,16 @@ def login():
 @app.route('/chat')
 @login_required
 def chat():
-    print("User authenticated :",current_user.is_authenticated,current_user.get_id())
+
     return render_template('chat.html',username=current_user.get_id())
 
 
 
 @socket.on('connect')
 def handle_connection():
-    global count 
-    count += 1
-    print(f"{count} Connection Found")
     data = { 'user': current_user.get_id(),
             'type': 'connection'}
     emit('connection-found',data,broadcast=True)
-    print(current_user)
 
 @socket.on('user-typing')
 def handle_your_typing(user):

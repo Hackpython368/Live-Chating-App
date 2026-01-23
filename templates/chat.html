@@ -33,7 +33,6 @@
     <script>
         const inputfield = document.getElementById('messageInput')
         const username = document.getElementById('username').textContent.trim()
-        console.log(username)
         const socket = io();
 
         function push_on_screen(msg, username, self = false) {
@@ -49,8 +48,9 @@
         }
 
         inputfield.addEventListener('keyup',(event) => {
-            console.log("Typing");
-            socket.emit('user-typing',username);
+            if (document.visibilityState==="visible"){
+                socket.emit('user-typing',username);
+            }
 
         });
 
@@ -64,7 +64,6 @@
             const msg = inputfield.value.trim()
             inputfield.value = ""
             if(msg!=""){
-
                 socket.emit('send_msg', msg)
             }
         }
@@ -75,7 +74,6 @@
             } else {
                 self = false;
             }
-            console.log(msg)
             push_on_screen(msg.msg, msg.username, self)
         })
 
