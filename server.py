@@ -1,7 +1,8 @@
 from flask import Flask,render_template,redirect,request
 from flask_socketio import SocketIO,emit
 from flask_login import login_required,LoginManager,UserMixin,current_user,login_user
-
+import uuid
+from datetime import datetime 
 
 
 
@@ -68,13 +69,50 @@ def handle_your_typing(user):
     emit("connection-found",data,broadcast=True)
 
 
+# Store messages in memory (in production, use a database)
+messages_store = {}
+
 @socket.on('send_msg')
 def handle_msg(msg):
-    emit('recv',{'msg':msg,'username':current_user.get_id()},broadcast=True)
+    message_id = str(uuid.uuid4())
+    timestamp = datetime.now().strftime('%H:%M')
+    message_data = {
+        'id': message_id,
+        'msg': msg,
+        'username': current_user.get_id(),
+        'timestamp': timestamp,
+        'edited': False
+    }
+    messages_store[message_id] = message_data
+    emit('recv', message_data, broadcast=True)
 
+@socket.on('edit_msg')
+def handle_edit(data):
+    message_id = data.get('id')
+    new_msg = data.get('msg')
+    username = current_user.get_id()
+    
+    if message_id in messages_store and messages_store[message_id]['username'] == username:
+        messages_store[message_id]['msg'] = new_msg
+        messages_store[message_id]['edited'] = True
+        emit('msg_edited', {
+            'id': message_id,
+            'msg': new_msg,
+            'edited': True
+        }, broadcast=True)
+
+@socket.on('delete_msg')
+def handle_delete(data):
+    message_id = data.get('id')
+    username = current_user.get_id()
+    
+    if message_id in messages_store and messages_store[message_id]['username'] == username:
+        del messages_store[message_id]
+        emit('msg_deleted', {
+            'id': message_id
+        }, broadcast=True)
 
 
 
 if __name__=="__main__":
     socket.run(app,host="0.0.0.0",port=5000,allow_unsafe_werkzeug=True)
-
