@@ -1,6 +1,46 @@
-from flask import Flask,render_template,redirect,request
+from flask import Flask,render_template,redirect,request,session,abort
 from flask_socketio import SocketIO,emit
 from flask_login import login_required,LoginManager,UserMixin,current_user,login_user
+
+
+import os
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
+from googleapiclient.discovery import build
+
+
+
+def flow_create(redirection_uri="http://localhost:5000/callback"):
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file('client_secret.json',
+        scopes=[
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/userinfo.email',
+            'openid'
+        ])
+
+    flow.redirect_uri = redirection_uri
+
+    return flow
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -36,15 +76,58 @@ def load_user(username):
 @app.route('/',methods=['GET','POST'])
 def login():
     if request.method=="POST":
-        username = request.form.get('username')
+        btnType = request.form.get('btn-type')
+        if btnType == 'google-sign-in':
+            flow = flow_create()
+            authorization_url, state = flow.authorization_url(
+                access_type = "offline",
+                include_granted_scopes='true',
+                prompt = 'consent'
 
-        user = Client(username)
+            )
+            
+            session['state'] = state 
 
-        login_user(user)
+            return redirect(authorization_url)
+        
+        else:
+            
+            username = request.form.get('username')
 
-        return redirect('/chat')
+            user = Client(username)
+
+            login_user(user)
+
+            return redirect('/chat')
+        
     return render_template('index.html')
 
+
+@app.route('/callback')
+def callback():
+    flow = flow_create()
+    flow.fetch_token(authorization_response=request.url)
+
+    if not session['state'] == request.args['state']:
+        return abort(401)
+    
+    credentials = flow.credentials
+
+    user = build(
+        "oauth2",
+        "v2",
+        credentials=credentials
+    )
+
+    user_info = user.userinfo().get().execute()
+
+    print(user_info)
+    user = Client(user_info['name'])
+
+    login_user(user)
+
+    
+    return redirect('/chat')
 
 
 @app.route('/chat')
