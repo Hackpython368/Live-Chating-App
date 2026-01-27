@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Welcome | Chat App</title>
+  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css')}}" />
+  <style>
+    /* Card animation on page load */
+    .card {
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+    .card.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Smooth error message */
+    #error-msg {
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #error-msg.show {
+      opacity: 1;
+    }
+
+    /* Button hover shadow */
+    button:hover {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Input focus effect */
+    input:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 5px rgba(52,152,219,0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="login-card">
+    <h1>Welcome 👋</h1>
+    <p class="subtitle">Enter your username to start chatting</p>
+    <form id="login-form">
+        <input 
+        type="text" 
+        id="username"
+        name="username" 
+        placeholder="Your username"
+        maxlength="20"
+        required
+        />
+        
+        <button type="submit">Continue</button>
+        <p id="error-msg">Please enter a username</p>
+    </form>
+  </div>
+
+  <script>
+    // Show card with fade-in animation
+    const card = document.getElementById('login-card');
+    setTimeout(() => card.classList.add('show'), 100);
+
+    const form = document.getElementById('login-form');
+    const usernameInput = document.getElementById('username');
+    const errorMsg = document.getElementById('error-msg');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const username = usernameInput.value.trim();
+      if(username === "") {
+        errorMsg.classList.add('show');
+      } else {
+        errorMsg.classList.remove('show');
+        // Store username for chat page
+        localStorage.setItem('username', username);
+        window.location.href = "/chat";
+      }
+    });
+  </script>
+</body>
+</html>
