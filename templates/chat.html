@@ -1,97 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Chat UI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Chat Room</title>
-    <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css')}}" />
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#ddd;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
 
+/* MAIN WRAPPER */
+.app{
+  width:900px;
+  height:550px;
+  background:#fff;
+  display:flex;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
 
+/* LEFT USERS */
+.users{
+  width:30%;
+  background:#075e54;
+  color:#fff;
+  padding:10px;
+}
+
+.users h3{
+  margin:10px 0;
+}
+
+.user{
+  background:#128c7e;
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.user:hover{
+  background:#25d366;
+}
+
+/* RIGHT CHAT */
+.chat{
+  width:70%;
+  display:flex;
+  flex-direction:column;
+}
+
+.chat-header{
+  background:#075e54;
+  color:#fff;
+  padding:15px;
+}
+
+.chat-messages{
+  flex:1;
+  background:#ece5dd;
+  padding:15px;
+  overflow-y:auto;
+}
+
+.msg{
+  max-width:60%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:8px;
+  font-size:14px;
+}
+
+.left{
+  background:#fff;
+}
+
+.right{
+  background:#dcf8c6;
+  margin-left:auto;
+}
+
+.time{
+  font-size:10px;
+  text-align:right;
+  color:#555;
+}
+
+/* INPUT */
+.chat-input{
+  display:flex;
+  padding:10px;
+  background:#f0f0f0;
+}
+
+.chat-input input{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:20px;
+  outline:none;
+}
+
+.chat-input button{
+  margin-left:10px;
+  padding:10px 16px;
+  border:none;
+  border-radius:50%;
+  background:#25d366;
+  color:#fff;
+  cursor:pointer;
+}
+</style>
 </head>
 
 <body>
-    <div class="chat-container">
-        <header class="chat-header">
-            <span id="userDisplay">Login in as <span id="username">{{username}}</span></span>
-        </header>
 
-        <div class="chat-messages" id="messages"></div>
+<div class="app">
 
-        <div class="chat-input">
-            <input type="text" id="messageInput" placeholder="Type your message..." />
-            <button id="send-btn" onclick="sendMessage()" type="submit">Send</button>
-        </div>
+  <!-- LEFT USERS -->
+  <div class="users">
+    <h3>Users</h3>
+    <div class="user" onclick="selectUser('Alice')">Alice</div>
+    <div class="user" onclick="selectUser('Bob')">Bob</div>
+    <div class="user" onclick="selectUser('Charlie')">Charlie</div>
+    <div class="user" onclick="selectUser('David')">David</div>
+  </div>
+
+  <!-- RIGHT CHAT -->
+  <div class="chat">
+    <div class="chat-header" id="chatHeader">Select a user</div>
+
+    <div class="chat-messages" id="messages"></div>
+
+    <div class="chat-input">
+      <input type="text" id="input" placeholder="Type a message">
+      <button onclick="sendMessage()">➤</button>
     </div>
-    <div id="floatingBox">
-        
-    </div>
+  </div>
 
+</div>
 
-    <script>
-        const inputfield = document.getElementById('messageInput')
-        const username = document.getElementById('username').textContent.trim()
-        const socket = io();
+<script>
+let currentUser = "";
 
-        function push_on_screen(msg, username, self = false) {
-            const msgDiv = document.createElement("div");
-            if (self == false) {
-                msgDiv.className = "message other";
-            } else {
-                msgDiv.className = "message own";
-            }
-            msgDiv.innerHTML = `<strong>${username}</strong><br>${msg}`;
+const messages = document.getElementById("messages");
+const input = document.getElementById("input");
+const header = document.getElementById("chatHeader");
 
-            document.getElementById("messages").appendChild(msgDiv);
-        }
+function selectUser(name){
+  currentUser = name;
+  header.innerText = name;
+  messages.innerHTML = "";
+}
 
-        inputfield.addEventListener('keyup',(event) => {
-            if (document.visibilityState==="visible"){
-                socket.emit('user-typing',username);
-            }
+function getTime(){
+  return new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
 
-        });
+function addMessage(text, side){
+  const div = document.createElement("div");
+  div.className = "msg " + side;
+  div.innerHTML = text + `<div class="time">${getTime()}</div>`;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
 
-        inputfield.addEventListener('keydown', (event) => {
-            if (event.key == 'Enter') {
-                sendMessage();
-            }
-        });
+function sendMessage(){
+  if(!currentUser){
+    alert("Select a user first");
+    return;
+  }
 
-        function sendMessage() {
-            const msg = inputfield.value.trim()
-            inputfield.value = ""
-            if(msg!=""){
-                socket.emit('send_msg', msg)
-            }
-        }
+  const msg = input.value.trim();
+  if(msg==="") return;
 
-        socket.on('recv', (msg) => {
-            if (username == msg.username) {
-                self = true;
-            } else {
-                self = false;
-            }
-            push_on_screen(msg.msg, msg.username, self)
-        })
+  addMessage(msg,"right");
+  input.value="";
 
+  setTimeout(()=>{
+    addMessage("Reply from " + currentUser,"left");
+  },1000);
+}
 
-        socket.on('connection-found', (data) => {
-            const box = document.getElementById("floatingBox");
-            box.classList.add('show')
-            if (data['type']=='typing'){
-                box.textContent = "🙌 " + data['user'] + " is typing !"
-            }else{
+input.addEventListener("keydown", e=>{
+  if(e.key==="Enter") sendMessage();
+});
+</script>
 
-                box.textContent = "😎 " + data['user'] + " Join the Chat!!";
-            }
-            setTimeout(()=>{
-                box.classList.remove('show')
-            },5000)
-        })
-    </script>
 </body>
-
 </html>
