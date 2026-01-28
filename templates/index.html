@@ -1,146 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <title>Login | Your App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | Chat App</title>
-
-  <style>
-    body{
-      margin:0;
-      height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      background:#e5ddd5;
-      font-family: Arial, sans-serif;
-    }
-
-    .page-box{
-      width:90%;
-      max-width:420px;
-      padding:25px;
-      background:#f8f8f8;
-      border-radius:14px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.25);
-    }
-
-    .card{
-      background:#ffffff;
-      border-radius:12px;
-      padding:30px 25px;
-      text-align:center;
-    }
-
-    .card h2{
-      margin-bottom:20px;
-      color:#075e54;
-    }
-
-    .card input{
-      width:100%;
-      padding:12px;
-      margin-bottom:15px;
-      border:1px solid #ccc;
-      border-radius:6px;
-      font-size:14px;
-      outline:none;
-    }
-
-    .buttons{
-      display:flex;
-      gap:10px;
-      margin-bottom:15px;
-    }
-
-    .buttons button{
-      flex:1;
-      padding:12px;
-      border:none;
-      border-radius:6px;
-      font-size:14px;
-      cursor:pointer;
-    }
-
-    .continue{
-      background:#25d366;
-      color:white;
-    }
-
-    .cancel{
-      background:#ddd;
-      color:#333;
-    }
-
-    .divider{
-      margin:15px 0;
-      font-size:13px;
-      color:#777;
-    }
-
-    /* Google Button */
-    .google-btn{
-      width:100%;
-      padding:12px;
-      border:1px solid #ccc;
-      border-radius:6px;
-      background:#fff;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      font-size:14px;
-    }
-
-    .google-btn img{
-      width:18px;
-      height:18px;
-    }
-
-    button:hover{
-      opacity:0.9;
-    }
-  </style>
+  <link rel="stylesheet" href="{{url_for('static',filename='css/theme.css')}}">
 </head>
 
-<body>
+<body data-theme="light">
 
-  <div class="page-box">
-    <div class="card">
-      <h2>Login</h2>
+<button class="theme-toggle" onclick="toggleTheme()">🌗</button>
 
-      <form action="/" method="post">
-        <input
-          type="text"
-          name="username"
-          placeholder="Enter username"
-          required
-          maxlength="20"
-        />
+<div style="height:100vh;display:flex;align-items:center;justify-content:center;">
+  <div class="card" style="width:100%;max-width:380px;text-align:center;">
 
-        <div class="buttons">
-          <button type="submit" class="continue">Continue</button>
-          <button type="reset" class="cancel">Cancel</button>
-        </div>
-      </form>
+    <h2 style="margin-bottom:6px;">Welcome 👋</h2>
+    <p style="color:var(--text-muted);margin-bottom:24px;">
+      Login to continue
+    </p>
 
-      <div class="divider">or</div>
+    <!-- EMAIL LOGIN -->
+     <form action="/" method="post">
 
-      <!-- Google Auth UI -->
-      <button class="google-btn" onclick="googleLogin()">
-        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
-        Continue with Google
-      </button>
-
+       <input
+       type="email"
+       class="input"
+       placeholder="Enter your email"
+       name = 'email'
+       required
+       />
+       
+       <button type="submit" class="btn-primary" style="margin-top:16px;">
+         Continue with Email
+        </button>
+        
+        <div style="margin:18px 0;color:var(--text-muted);font-size:13px;">
+    </form>
+      or
     </div>
-  </div>
 
-  <script>
-    function googleLogin(){
-      alert("Google Authentication will be connected with backend (Flask)");
-    }
-  </script>
+    <!-- GOOGLE LOGIN -->
+    <button class="btn-secondary">
+      <img
+        src="https://developers.google.com/identity/images/g-logo.png"
+        width="18"
+        alt="Google"
+      />
+      Continue with Google
+    </button>
+
+  </div>
+</div>
+
+<script>
+  function toggleTheme(){
+    const body = document.body;
+    body.dataset.theme =
+      body.dataset.theme === "dark" ? "light" : "dark";
+  }
+</script>
 
 </body>
 </html>
