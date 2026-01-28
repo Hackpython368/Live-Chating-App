@@ -1,0 +1,125 @@
+/* ===============================
+   THEME VARIABLES
+================================ */
+
+:root {
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-muted: #f1f5f9;
+
+  --primary: #4f46e5;
+  --primary-soft: #eef2ff;
+
+  --text-main: #111827;
+  --text-muted: #6b7280;
+
+  --border: #e5e7eb;
+}
+
+/* -------- DARK MODE -------- */
+[data-theme="dark"] {
+  --bg-main: #0f172a;
+  --bg-card: #111827;
+  --bg-muted: #1f2937;
+
+  --primary: #6366f1;
+  --primary-soft: #1e1b4b;
+
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+
+  --border: #d1dae9;
+}
+
+/* ===============================
+   GLOBAL
+================================ */
+
+* {
+  box-sizing: border-box;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 14px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ===============================
+   INPUT
+================================ */
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ===============================
+   CARD
+================================ */
+
+.card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 30px 26px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* ===============================
+   THEME TOGGLE
+================================ */
+
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}

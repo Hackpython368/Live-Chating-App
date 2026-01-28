@@ -1,18 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <title>Login | Your App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Welcome | Chat App</title>
-  <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css')}}" />
+  <link rel="stylesheet" href="{{url_for('static',filename='css/theme.css')}}">
 </head>
-<body>
-  <div class="card">
-    <h1>Welcome 👋</h1>
-    <form action="/" method="post">
-        <button type="submit" style="margin-top: 10px;" name="btn-type" value="google-sign-in">Sign In with Google</button>
+
+<body data-theme="light">
+
+<button class="theme-toggle" onclick="toggleTheme()">🌗</button>
+
+<div style="height:100vh;display:flex;align-items:center;justify-content:center;">
+  <div class="card" style="width:100%;max-width:380px;text-align:center;">
+
+    <h2 style="margin-bottom:6px;">Welcome 👋</h2>
+    <p style="color:var(--text-muted);margin-bottom:24px;">
+      Login to continue
+    </p>
+
+    <!-- EMAIL LOGIN -->
+     <form action="/" method="post">
+
+        
+       <button type="submit" class="btn-secondary" name="btn-type" value="google-sign-in">
+         <img
+           src="https://developers.google.com/identity/images/g-logo.png"
+           width="18"
+           alt="Google"
+         />
+         Continue with Google
+       </button>
     </form>
+
+    <!-- GOOGLE LOGIN -->
+
   </div>
+</div>
+
+<script>
+  function toggleTheme(){
+    const body = document.body;
+    body.dataset.theme =
+      body.dataset.theme === "dark" ? "light" : "dark";
+  }
+</script>
+
 </body>
 </html>

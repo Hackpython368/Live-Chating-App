@@ -90,15 +90,7 @@ def login():
 
             return redirect(authorization_url)
         
-        else:
-            
-            username = request.form.get('username')
-
-            user = Client(username)
-
-            login_user(user)
-
-            return redirect('/chat')
+        
         
     return render_template('index.html')
 
