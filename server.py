@@ -134,10 +134,13 @@ def callback():
 @app.route('/chat')
 @login_required
 def chat():
-    if len(live_users)>0:
-        return render_template('chat.html',username=live_users[current_user.get_id()]['name'])
-    else:
-        return abort(500)
+    try:
+        username = live_users[current_user.get_id()]['name']
+    except:
+        return abort(401)
+ 
+    return render_template('chat.html',username=username)
+    
 
 
 
@@ -170,7 +173,7 @@ def handle_msg(msg):
     message_data = {
         'id': message_id,
         'msg': msg,
-        'username': current_user.get_id(),
+        'username': live_users[current_user.get_id()]['name'],
         'timestamp': timestamp,
         'edited': False
     }
@@ -181,7 +184,7 @@ def handle_msg(msg):
 def handle_edit(data):
     message_id = data.get('id')
     new_msg = data.get('msg')
-    username = current_user.get_id()
+    username = live_users[current_user.get_id()]['name']
     
     if message_id in messages_store and messages_store[message_id]['username'] == username:
         messages_store[message_id]['msg'] = new_msg
@@ -195,7 +198,7 @@ def handle_edit(data):
 @socket.on('delete_msg')
 def handle_delete(data):
     message_id = data.get('id')
-    username = current_user.get_id()
+    username = live_users[current_user.get_id()]['name']
     
     if message_id in messages_store and messages_store[message_id]['username'] == username:
         del messages_store[message_id]
@@ -206,4 +209,4 @@ def handle_delete(data):
 
 
 if __name__=="__main__":
-    socket.run(app,host="0.0.0.0",port=5000,allow_unsafe_werkzeug=True)
+    socket.run(app,host="0.0.0.0",port=5000,allow_unsafe_werkzeug=True,debug=True)
