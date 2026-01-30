@@ -326,16 +326,21 @@
   socket.on('connection-found', (data) => {
     const userbox = document.getElementById('users');
     const box = document.getElementById("floatingBox");
-
+    
     
     if (data.type === 'typing'){
       
       box.textContent = `✍️ ${data.user} is typing`;
     }else{
-      mkdiv = document.createElement('div')
-      mkdiv.className = 'user-item';
-      mkdiv.textContent = data.user;
-      userbox.appendChild(mkdiv);
+      
+      userbox.innerHTML = '';
+      for (const name of data.connection){
+
+        mkdiv = document.createElement('div')
+        mkdiv.className = 'user-item';
+        mkdiv.textContent = name;
+        userbox.appendChild(mkdiv);
+      }
       
       box.textContent = `👋 ${data.user} joined`;
     }

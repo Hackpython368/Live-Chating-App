@@ -32,7 +32,7 @@ def flow_create(redirection_uri="http://localhost:5000/callback"):
 
 
 
-
+live_users = {}
 
 
 
@@ -48,9 +48,9 @@ def flow_create(redirection_uri="http://localhost:5000/callback"):
 
 class Client(UserMixin):
 
-    def __init__(self,username):
-        self.id = username
-        self.username = username
+    def __init__(self,id):
+        self.id = id
+
 
 
 app = Flask(__name__)
@@ -67,8 +67,8 @@ login_manage.login_view = 'login'
 
 
 @login_manage.user_loader
-def load_user(username):
-    return Client(username)
+def load_user(id):
+    return Client(id)
 
 
 
@@ -114,10 +114,16 @@ def callback():
     user_info = user.userinfo().get().execute()
 
     print(user_info)
-    user = Client(user_info['name'])
+    user = Client(user_info['id'])
+
 
     login_user(user)
 
+    live_users[current_user.get_id()] = {
+        'name' : user_info['name'],
+        'email': user_info['email'],
+        'profile' : user_info['picture']
+    }
     
     return redirect('/chat')
 
@@ -125,27 +131,33 @@ def callback():
 @app.route('/chat')
 @login_required
 def chat():
-
-    return render_template('chat.html',username=current_user.get_id())
+    
+    return render_template('chat.html',username=live_users[current_user.get_id()]['name'])
 
 
 
 @socket.on('connect')
 def handle_connection():
-    data = { 'user': current_user.get_id(),
-            'type': 'connection'}
+    user_connected = []
+    for i in live_users.keys():
+        user_connected.append(live_users[i]['name'])
+    data = { 'user': live_users[current_user.get_id()]['name'],
+            'type': 'connection',
+            'profile': live_users[current_user.get_id()]['profile'],
+            'connection': user_connected}
+    print(data)
     emit('connection-found',data,broadcast=True)
 
 @socket.on('user-typing')
 def handle_your_typing(user):
-    data = { 'user': current_user.get_id(),
+    data = { 'user': live_users[current_user.get_id()]['name'],
             'type': 'typing'}
     emit("connection-found",data,broadcast=True)
 
 
 @socket.on('send_msg')
 def handle_msg(msg):
-    emit('recv',{'msg':msg,'username':current_user.get_id()},broadcast=True)
+    emit('recv',{'msg':msg,'username':live_users[current_user.get_id()]['name']},broadcast=True)
 
 
 
