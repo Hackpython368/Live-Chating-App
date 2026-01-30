@@ -98,6 +98,7 @@ def login():
 @app.route('/callback')
 def callback():
     flow = flow_create()
+    
     flow.fetch_token(authorization_response=request.url)
 
     if not session['state'] == request.args['state']:
@@ -131,8 +132,10 @@ def callback():
 @app.route('/chat')
 @login_required
 def chat():
-    
-    return render_template('chat.html',username=live_users[current_user.get_id()]['name'])
+    if len(live_users)>0:
+        return render_template('chat.html',username=live_users[current_user.get_id()]['name'])
+    else:
+        return abort(500)
 
 
 
