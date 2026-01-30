@@ -1,5 +1,10 @@
 # 💬 Live-Chat-App
 
+### For live preview
+```bash
+https://live-chating-app.onrender.com
+```
+
 Live-Chat-App is a real-time web-based chat application built using **Flask**, **Flask-SocketIO**, and **Flask-Login**.  
 The project demonstrates real-time communication, user session management, and a mobile-first responsive UI.
 

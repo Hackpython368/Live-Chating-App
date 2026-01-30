@@ -285,45 +285,266 @@
 </div>
 
 <div id="floatingBox"></div>
+    
+    <div class="chat-messages" id="chat-messages">
+      <!-- Messages will be added here -->
+    </div>
 
-<!-- 🔥 SOCKET / MESSAGE JS (UNCHANGED) -->
-<script>
-  function toggleTheme() {
+  <!-- Edit Modal -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <h3>Edit Message</h3>
+      <input type="text" id="edit-input" />
+      <div class="modal-buttons">
+        <button id="save-edit-btn">Save</button>
+        <button id="cancel-edit-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="modal">
+    <div class="modal-content">
+      <h3>Delete Message</h3>
+      <p style="margin: 16px 0; color: #2c3e50;">Are you sure you want to delete this message?</p>
+      <div class="modal-buttons">
+        <button id="confirm-delete-btn">Delete</button>
+        <button id="cancel-delete-btn">Cancel</button>
+      </div>
+    </div>
+
+
+  <script>
+
+    function toggleTheme() {
     document.body.dataset.theme =
       document.body.dataset.theme === "dark" ? "light" : "dark";
   }
 
-  const inputfield = document.getElementById('messageInput')
-  const username = document.getElementById('username').textContent.trim()
-  const socket = io();
+    const socket = io();
+    const username = "{{ username }}";
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const editModal = document.getElementById('edit-modal');
+    const editInput = document.getElementById('edit-input');
+    const saveEditBtn = document.getElementById('save-edit-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const deleteModal = document.getElementById('delete-modal');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    
+    let editingMessageId = null;
+    let deletingMessageId = null;
 
-  function push_on_screen(msg, username, self = false) {
-    const msgDiv = document.createElement("div");
-    msgDiv.className = "message " + (self ? "own" : "other");
-    msgDiv.innerHTML = `<strong>${username}</strong>${msg}`;
-    document.getElementById('messages').appendChild(msgDiv)
-  }
-
-  inputfield.addEventListener('keydown',(key)=>{
-    if(key.key==="Enter"){
-      sendMessage()
+    // Send message
+    function sendMessage() {
+      const msg = messageInput.value.trim();
+      if (msg) {
+        socket.emit('send_msg', msg);
+        messageInput.value = '';
+      }
     }
-  })
-  inputfield.addEventListener('keyup', () => {
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    // Receive message
+    socket.on('recv', (data) => {
+      addMessage(data);
+    });
+
+    // Add message to chat
+    function addMessage(data) {
+      const messageWrapper = document.createElement('div');
+      messageWrapper.className = `message ${data.username === username ? 'own' : 'other'}`;
+      messageWrapper.id = `msg-${data.id}`;
+      
+      // Add username above message
+      const usernameLabel = document.createElement('div');
+      usernameLabel.className = 'message-username';
+      usernameLabel.textContent = data.username;
+      messageWrapper.appendChild(usernameLabel);
+      
+      // Message container for content and menu
+      const messageContainer = document.createElement('div');
+      messageContainer.className = 'message-container';
+      
+      const messageContent = document.createElement('div');
+      messageContent.className = 'message-content';
+      
+      const messageText = document.createElement('div');
+      messageText.className = 'message-text';
+      messageText.textContent = data.msg;
+      
+      const messageMeta = document.createElement('div');
+      messageMeta.className = 'message-meta';
+      
+      const timestamp = document.createElement('span');
+      timestamp.className = 'message-time';
+      timestamp.textContent = data.timestamp || '';
+      
+      messageContent.appendChild(messageText);
+      
+      if (data.edited) {
+        const editedBadge = document.createElement('span');
+        editedBadge.className = 'edited-badge';
+        editedBadge.textContent = 'edited';
+        messageText.appendChild(editedBadge);
+      }
+      
+      messageMeta.appendChild(timestamp);
+      messageContent.appendChild(messageMeta);
+      
+      // Add three-dot menu only for own messages
+      if (data.username === username) {
+        const menuContainer = document.createElement('div');
+        menuContainer.className = 'message-menu-container';
+        
+        const menuBtn = document.createElement('button');
+        menuBtn.className = 'menu-btn';
+        menuBtn.innerHTML = '⋯';
+        menuBtn.onclick = (e) => {
+          e.stopPropagation();
+          toggleMenu(menuBtn);
+        };
+        
+        const menu = document.createElement('div');
+        menu.className = 'message-menu';
+        menu.innerHTML = `
+          <button class="menu-item" onclick="editMessage('${data.id}')">Edit</button>
+          <button class="menu-item" onclick="deleteMessage('${data.id}')">Delete</button>
+        `;
+        
+        menuContainer.appendChild(menuBtn);
+        menuContainer.appendChild(menu);
+        messageContainer.appendChild(menuContainer);
+      }
+      
+      messageContainer.appendChild(messageContent);
+      messageWrapper.appendChild(messageContainer);
+      messagesContainer.appendChild(messageWrapper);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Toggle menu
+    function toggleMenu(btn) {
+      const menus = document.querySelectorAll('.message-menu');
+      menus.forEach(m => {
+        if (m !== btn.nextElementSibling) {
+          m.classList.remove('show');
+        }
+      });
+      const menu = btn.nextElementSibling;
+      menu.classList.toggle('show');
+    }
+
+    // Close menus when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.message-menu-container')) {
+        document.querySelectorAll('.message-menu').forEach(m => m.classList.remove('show'));
+      }
+    });
+
+    // Edit message
+    window.editMessage = function(messageId) {
+      const messageDiv = document.getElementById(`msg-${messageId}`);
+      const messageText = messageDiv.querySelector('.message-text');
+      const currentText = messageText.textContent.replace('edited', '').trim();
+      
+      editingMessageId = messageId;
+      editInput.value = currentText;
+      editModal.style.display = 'flex';
+      
+      document.querySelectorAll('.message-menu').forEach(m => m.classList.remove('show'));
+    };
+
+    inputfield.addEventListener('keyup', () => {
     socket.emit('user-typing', username);
   });
 
-  function sendMessage() {
-    const msg = inputfield.value.trim()
-    inputfield.value = ""
-    if (msg) socket.emit('send_msg', msg)
-  }
+    saveEditBtn.addEventListener('click', () => {
+      if (editingMessageId && editInput.value.trim()) {
+        socket.emit('edit_msg', {
+          id: editingMessageId,
+          msg: editInput.value.trim()
+        });
+        editModal.style.display = 'none';
+        editingMessageId = null;
+      }
+    });
 
-  socket.on('recv', (msg) => {
-    push_on_screen(msg.msg, msg.username, msg.username === username)
-  })
+    cancelEditBtn.addEventListener('click', () => {
+      editModal.style.display = 'none';
+      editingMessageId = null;
+    });
 
-  socket.on('connection-found', (data) => {
+    // Delete message
+    window.deleteMessage = function(messageId) {
+      deletingMessageId = messageId;
+      deleteModal.style.display = 'flex';
+      document.querySelectorAll('.message-menu').forEach(m => m.classList.remove('show'));
+    };
+
+    confirmDeleteBtn.addEventListener('click', () => {
+      if (deletingMessageId) {
+        socket.emit('delete_msg', { id: deletingMessageId });
+        deleteModal.style.display = 'none';
+        deletingMessageId = null;
+      }
+    });
+
+    cancelDeleteBtn.addEventListener('click', () => {
+      deleteModal.style.display = 'none';
+      deletingMessageId = null;
+    });
+
+    // Handle edited message
+    socket.on('msg_edited', (data) => {
+      const messageDiv = document.getElementById(`msg-${data.id}`);
+      if (messageDiv) {
+        const messageText = messageDiv.querySelector('.message-text');
+        // Remove existing edited badge if any
+        const existingBadge = messageText.querySelector('.edited-badge');
+        if (existingBadge) {
+          existingBadge.remove();
+        }
+        
+        // Update message text
+        const textNode = messageText.childNodes[0];
+        if (textNode && textNode.nodeType === 3) {
+          textNode.textContent = data.msg;
+        } else {
+          messageText.textContent = data.msg;
+        }
+        
+        // Add edited badge
+        const editedBadge = document.createElement('span');
+        editedBadge.className = 'edited-badge';
+        editedBadge.textContent = 'edited';
+        messageText.appendChild(editedBadge);
+      }
+    });
+
+    // Handle deleted message
+    socket.on('msg_deleted', (data) => {
+      const messageDiv = document.getElementById(`msg-${data.id}`);
+      if (messageDiv) {
+        messageDiv.style.transition = 'opacity 0.3s';
+        messageDiv.style.opacity = '0';
+        setTimeout(() => {
+          if (messageDiv && messageDiv.parentNode) {
+            messageDiv.remove();
+          }
+        }, 300);
+      }
+    });
+
+    socket.on('connection-found', (data) => {
     const userbox = document.getElementById('users');
     const box = document.getElementById("floatingBox");
     
@@ -347,7 +568,6 @@
     box.classList.add('show');
     setTimeout(() => box.classList.remove('show'), 3000);
   })
-</script>
-
+  </script>
 </body>
 </html>
