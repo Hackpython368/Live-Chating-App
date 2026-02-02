@@ -1,6 +1,18 @@
 from flask import Flask,render_template,redirect,request,session,abort
 from flask_socketio import SocketIO,emit
 from flask_login import login_required,LoginManager,UserMixin,current_user,login_user
+from sqlalchemy import create_engine,text
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+
+_db_engine = create_engine(os.getenv("URL"))
+
+
+conn = _db_engine.connect()
 
 
 import os
@@ -121,11 +133,14 @@ def callback():
 
 
     login_user(user)
-
+    try:
+        conn.execute(text(f"INSERT INTO USER_INFO (ID, NAME,EMAIL,PROFILE) VALUES('{user_info['id']}','{user_info['name']}','{user_info['email']}','{user_info['picture']}');"))
+        conn.commit()
+    except:
+        print("dublicate")
     live_users[current_user.get_id()] = {
         'name' : user_info['name'],
-        'email': user_info['email'],
-        'profile' : user_info['picture']
+        'email': user_info['email']
     }
     
     return redirect('/chat')
@@ -136,24 +151,31 @@ def callback():
 def chat():
     try:
         username = live_users[current_user.get_id()]['name']
+        print("username : ",username)
     except:
-        return abort(401)
- 
+        result = conn.execute(text(f"select name,email from user_info where id='{current_user.get_id()}';"))
+        data = result.fetchone()
+        if not data:
+            return abort(401)
+        else:
+            username,email = data
+            live_users[current_user.get_id()]={
+        'name' : username,
+        'email': email
+    }
     return render_template('chat.html',username=username)
     
 
 
 
 @socket.on('connect')
-def handle_connection():
+def handle_connection(_):
     user_connected = []
     for i in live_users.keys():
         user_connected.append(live_users[i]['name'])
     data = { 'user': live_users[current_user.get_id()]['name'],
             'type': 'connection',
-            'profile': live_users[current_user.get_id()]['profile'],
             'connection': user_connected}
-    print(data)
     emit('connection-found',data,broadcast=True)
 
 @socket.on('user-typing')
@@ -163,7 +185,6 @@ def handle_your_typing(user):
     emit("connection-found",data,broadcast=True)
 
 
-# Store messages in memory (in production, use a database)
 messages_store = {}
 
 @socket.on('send_msg')

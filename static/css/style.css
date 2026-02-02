@@ -1,3 +1,150 @@
+    /* =====================
+   THEME VARIABLES (BRAND: YELLOW / BLACK / GREY)
+===================== */
+:root {
+  /* Backgrounds */
+  --bg-main: #f4f4f4;        /* light grey page bg */
+  --bg-app: #ffffff;        /* app surface */
+  --bg-muted: #eeeeee;      /* chat background */
+
+  /* Sidebar */
+  --sidebar-bg: #0f0f0f;    /* black */
+  --sidebar-item: #1c1c1c;  /* dark grey */
+
+  /* Brand */
+  --primary: #f5c542;       /* yellow */
+  --primary-soft: #fff3c4;  /* soft yellow */
+
+  /* Text */
+  --text-main: #1a1a1a;     /* dark text */
+  --text-light: #ffffff;   /* white text */
+  --text-muted: #7a7a7a;    /* grey text */
+
+  /* UI */
+  --border: #d6d6d6;        /* light grey border */
+  --popup-bg: #0f0f0f;      /* black popup */
+}
+
+[data-theme="dark"] {
+  /* Backgrounds */
+  --bg-main: #0f0f0f;       /* pure black */
+  --bg-app: #161616;       /* dark surface */
+  --bg-muted: #1f1f1f;     /* chat bg dark */
+
+  /* Sidebar */
+  --sidebar-bg: #000000;   /* black */
+  --sidebar-item: #151515; /* dark grey */
+
+  /* Brand */
+  --primary: #f5c542;      /* yellow (same for consistency) */
+  --primary-soft: #3a320f; /* muted yellow for dark mode */
+
+  /* Text */
+  --text-main: #e6e6e6;    /* light text */
+  --text-light: #ffffff;
+  --text-muted: #9a9a9a;
+
+  /* UI */
+  --border: #2a2a2a;       /* dark border */
+  --popup-bg: #000000;     /* black popup */
+}
+
+
+/* ===============================
+   GLOBAL
+================================ */
+
+* {
+  box-sizing: border-box;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+/* ===============================
+   BUTTONS
+================================ */
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 14px;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* ===============================
+   INPUT
+================================ */
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ===============================
+   CARD
+================================ */
+
+.card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 30px 26px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+/* ===============================
+   THEME TOGGLE
+================================ */
+
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+
+
 * {
   box-sizing: border-box;
   font-family: "Segoe UI", sans-serif;

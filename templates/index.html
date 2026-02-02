@@ -4,7 +4,133 @@
   <meta charset="UTF-8">
   <title>Login | Your App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="{{url_for('static',filename='css/theme.css')}}">
+  <!-- <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}"> -->
+
+      <style>
+    /* =====================
+       BRAND THEME (SAME AS CHAT)
+    ===================== */
+    :root {
+      --bg-main: #f4f4f4;
+      --bg-app: #ffffff;
+      --bg-muted: #eeeeee;
+
+      --primary: #f5c542;
+      --primary-soft: #fff3c4;
+
+      --text-main: #1a1a1a;
+      --text-muted: #7a7a7a;
+      --text-light: #ffffff;
+
+      --border: #d6d6d6;
+    }
+
+    [data-theme="dark"] {
+      --bg-main: #0f0f0f;
+      --bg-app: #161616;
+      --bg-muted: #1f1f1f;
+
+      --primary: #f5c542;
+      --primary-soft: #3a320f;
+
+      --text-main: #e6e6e6;
+      --text-muted: #9a9a9a;
+      --text-light: #ffffff;
+
+      --border: #2a2a2a;
+    }
+
+    /* =====================
+       GLOBAL
+    ===================== */
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(
+        135deg,
+        var(--bg-main),
+        var(--bg-muted)
+      );
+      color: var(--text-main);
+    }
+
+    /* =====================
+       THEME TOGGLE
+    ===================== */
+    .theme-toggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: var(--bg-app);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    /* =====================
+       LOGIN CARD
+    ===================== */
+    .card {
+      background: var(--bg-app);
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+      border: 1px solid var(--border);
+    }
+
+    h2 {
+      margin: 0;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* =====================
+       BUTTON
+    ===================== */
+    .btn-secondary {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--primary-soft);
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary img {
+      background: #fff;
+      border-radius: 50%;
+      padding: 2px;
+    }
+
+    .btn-secondary:hover {
+      background: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary:active {
+      transform: scale(0.98);
+    }
+  </style>
 </head>
 
 <body data-theme="light">
