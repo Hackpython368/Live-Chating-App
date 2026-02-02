@@ -2,6 +2,7 @@ from flask import Flask,render_template,redirect,request,session,abort
 from flask_socketio import SocketIO,emit
 from flask_login import login_required,LoginManager,UserMixin,current_user,login_user
 from sqlalchemy import create_engine,text
+from sqlalchemy.pool import NullPool
 import os
 from dotenv import load_dotenv
 import json
@@ -10,7 +11,7 @@ load_dotenv()
 
 
 
-_db_engine = create_engine(os.getenv("URL"),pool_pre_ping=True,connect_args={'connect_timeout':10})
+_db_engine = create_engine(os.getenv("URL"),poolclass=NullPool,connect_args={'sslmode':'require'})
 with open('client_secret.json','w') as f:
     data = json.loads(os.getenv("GOOGLE"))
     json.dump(data,f)
