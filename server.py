@@ -4,13 +4,16 @@ from flask_login import login_required,LoginManager,UserMixin,current_user,login
 from sqlalchemy import create_engine,text
 import os
 from dotenv import load_dotenv
+import json
 
 load_dotenv()
 
 
 
 _db_engine = create_engine(os.getenv("URL"))
-
+with open('client_secret.json','w') as f:
+    data = json.loads(os.getenv("GOOGLE"))
+    json.dump(data,f)
 
 conn = _db_engine.connect()
 
@@ -25,7 +28,7 @@ from googleapiclient.discovery import build
 
 
 
-def flow_create(redirection_uri="http://localhost:5000/callback"):
+def flow_create(redirection_uri="https://live-chating-app.onrender.com/callback"):
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file('client_secret.json',
         scopes=[
             'https://www.googleapis.com/auth/userinfo.profile',
