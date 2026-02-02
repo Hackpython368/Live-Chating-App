@@ -10,7 +10,7 @@ load_dotenv()
 
 
 
-_db_engine = create_engine(os.getenv("URL"))
+_db_engine = create_engine(os.getenv("URL"),pool_pre_ping=True,connect_args={'connect_timeout':10})
 with open('client_secret.json','w') as f:
     data = json.loads(os.getenv("GOOGLE"))
     json.dump(data,f)
