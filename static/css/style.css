@@ -297,6 +297,8 @@ button:hover {
   border-radius: 18px 18px 4px 18px;
   background: #5dade2;
   color: white;
+  max-width: 70vw;
+  overflow: break-all;
 }
 
 .message.other .message-content {

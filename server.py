@@ -1,35 +1,40 @@
+# Importing all required Module 
+
 from flask import Flask,render_template,redirect,request,session,abort
 from flask_socketio import SocketIO,emit
 from flask_login import login_required,LoginManager,UserMixin,current_user,login_user
 from sqlalchemy import create_engine,text
 from sqlalchemy.pool import NullPool
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # Import to help load .env files 
 import json
-
-load_dotenv()
-
-
-
-_db_engine = create_engine(os.getenv("URL"),poolclass=NullPool,connect_args={'sslmode':'require'})
-with open('client_secret.json','w') as f:
-    data = json.loads(os.getenv("GOOGLE"))
-    json.dump(data,f)
-
-conn = _db_engine.connect()
-
-
-import os
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-
-
-import google.oauth2.credentials
+import uuid # Imported to generate unique id for each message by the user 
+from datetime import datetime 
 import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
 
 
 
-def flow_create(redirection_uri="https://live-chating-app.onrender.com/callback"):
+# This Function help to load the .env variable to configure with system variable which help to loaded by the python os.getenv() function .
+load_dotenv()
+
+
+# making conncection with the database using the URL .
+_db_engine = create_engine(os.getenv("URL"),poolclass=NullPool,connect_args={'sslmode':'require'})
+
+
+# Creating JSON file to pass in the google Auth .
+with open('client_secret.json','w') as f:
+    data = json.loads(os.getenv("GOOGLE"))
+    json.dump(data,f)
+
+###### Remove on the production  Please
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+
+
+# creating Flow for which take client secret and scopes of and redirect uri
+def flow_create(redirection_uri="http://localhost:5000/callback"):
     flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file('client_secret.json',
         scopes=[
             'https://www.googleapis.com/auth/userinfo.profile',
@@ -42,28 +47,12 @@ def flow_create(redirection_uri="https://live-chating-app.onrender.com/callback"
     return flow
 
 
-
-
-
-
-
-
+# A dict which hold live user along detials
 live_users = {}
 
+user_last_seen = {}
 
-
-
-
-
-
-
-
-import uuid
-from datetime import datetime 
-
-
-
-
+# Binding each user as client help to manage them easily
 class Client(UserMixin):
 
     def __init__(self,id):
@@ -72,8 +61,7 @@ class Client(UserMixin):
 
 
 app = Flask(__name__)
-
-app.config['SECRET_KEY'] = 'secret_key_app'
+app.config['SECRET_KEY'] = os.getenv('SECRETKEY')
 
 
 socket = SocketIO(app)
@@ -90,32 +78,29 @@ def load_user(id):
 
 
 
-
 @app.route('/',methods=['GET','POST'])
 def login():
     if request.method=="POST":
-        btnType = request.form.get('btn-type')
-        if btnType == 'google-sign-in':
-            flow = flow_create()
-            authorization_url, state = flow.authorization_url(
+        flow = flow_create('https://prescriptive-nonstrategically-mae.ngrok-free.dev/callback')
+        authorization_url, state = flow.authorization_url(
                 access_type = "offline",
                 include_granted_scopes='true',
                 prompt = 'consent'
 
             )
             
-            session['state'] = state 
+        session['state'] = state 
 
-            return redirect(authorization_url)
-        
-        
+        return redirect(authorization_url)
         
     return render_template('index.html')
 
 
+
+# This route handle the google login process when return the app .
 @app.route('/callback')
 def callback():
-    flow = flow_create()
+    flow = flow_create('https://prescriptive-nonstrategically-mae.ngrok-free.dev/callback')
     
     flow.fetch_token(authorization_response=request.url)
 
@@ -132,22 +117,26 @@ def callback():
 
     user_info = user.userinfo().get().execute()
 
-    print(user_info)
     user = Client(user_info['id'])
 
 
     login_user(user)
-    try:
-        conn.execute(text(f"INSERT INTO USER_INFO (ID, NAME,EMAIL,PROFILE) VALUES('{user_info['id']}','{user_info['name']}','{user_info['email']}','{user_info['picture']}');"))
-        conn.commit()
-    except:
-        print("dublicate")
-    live_users[current_user.get_id()] = {
-        'name' : user_info['name'],
-        'email': user_info['email']
-    }
+    
+    with _db_engine.connect() as f:
+        result = f.execute(text(f"select name,email from user_info where id='{user_info['id']}'"))
+        if result.fetchone():
+            live_users[current_user.get_id()] = {
+                'name' : user_info['name'],
+                'email': user_info['email'],
+                'status': 'online'
+            }
+        else:
+            f.execute(text(f"INSERT INTO USER_INFO (ID, NAME,EMAIL,PROFILE) VALUES('{user_info['id']}','{user_info['name']}','{user_info['email']}','{user_info['picture']}');"))
+            f.commit()
+
     
     return redirect('/chat')
+
 
 
 @app.route('/chat')
@@ -155,54 +144,76 @@ def callback():
 def chat():
     try:
         username = live_users[current_user.get_id()]['name']
-        print("username : ",username)
     except:
-        result = conn.execute(text(f"select name,email from user_info where id='{current_user.get_id()}';"))
-        data = result.fetchone()
-        if not data:
-            return abort(401)
-        else:
-            username,email = data
-            live_users[current_user.get_id()]={
-        'name' : username,
-        'email': email
-    }
+        with _db_engine.connect() as f:
+            result = f.execute(text(f"select name,email from user_info where id='{current_user.get_id()}';"))
+            data = result.fetchone()
+            if not data:
+                return abort(401)
+            else:
+                username,email = data
+                live_users[current_user.get_id()]={
+                    'name' : username,
+                    'email': email
+                }
+            
     return render_template('chat.html',username=username)
     
 
+######################
+# SOCKET connections #
+######################
 
 
 @socket.on('connect')
-def handle_connection(_):
-    user_connected = []
-    for i in live_users.keys():
-        user_connected.append(live_users[i]['name'])
-    data = { 'user': live_users[current_user.get_id()]['name'],
-            'type': 'connection',
-            'connection': user_connected}
-    emit('connection-found',data,broadcast=True)
+def handle_connection():
+    if current_user.get_id() not in live_users.keys():
+        with _db_engine.connect() as f:
+            result = f.execute(text(f"select name,email from user_info where id='{current_user.get_id()}';"))
+            data = result.fetchone()
+            username,email = data
+            live_users[current_user.get_id()]={
+                'name' : username,
+                'email': email
+            }
+        data = {
+            'user': live_users[current_user.get_id()]['name'],
+            'type': 'connection'
+        }
+        emit('connection-found',data,broadcast=True)
+    else:
+        with _db_engine.connect() as f:
+            result = f.execute(text("SELECT NAME FROM USER_INFO"))
+            data = result.fetchall()
+            user = []
+            for i in data:
+                user.append(i[0])
+
+        data = {
+            'connection' : user
+        }
+        emit('add-users',data,broadcast=True)
 
 @socket.on('user-typing')
-def handle_your_typing(user):
-    data = { 'user': live_users[current_user.get_id()]['name'],
-            'type': 'typing'}
-    emit("connection-found",data,broadcast=True)
+def handle_your_typing():
+    data = {
+        'user': live_users[current_user.get_id()]['name'],
+    }
+    emit("handle-typing",data,broadcast=True)
 
 
 messages_store = {}
 
 @socket.on('send_msg')
 def handle_msg(msg):
-    message_id = str(uuid.uuid4())
-    timestamp = datetime.now().strftime('%H:%M')
     message_data = {
-        'id': message_id,
+        'id': str(uuid.uuid4()),
         'msg': msg,
         'username': live_users[current_user.get_id()]['name'],
-        'timestamp': timestamp,
+        'timestamp': datetime.now().strftime('%H:%M'),
         'edited': False
     }
-    messages_store[message_id] = message_data
+    messages_store[message_data['id']] = message_data
     emit('recv', message_data, broadcast=True)
 
 @socket.on('edit_msg')
@@ -231,7 +242,19 @@ def handle_delete(data):
             'id': message_id
         }, broadcast=True)
 
+@socket.on('heartbeat')
+def user_status():
+    user_last_seen[current_user.get_id()] = datetime.now().timestamp()
+    emit('status',{'status':'online','user':(live_users[current_user.get_id()]['name']).upper(),'color':'green'},broadcast=True)
+
+
+@socket.on('check-active-user')
+def check_active_user():
+    for user in user_last_seen:
+        if datetime.now().timestamp() - user_last_seen[user]>=10:
+            emit('status',{'status':'offline','user':(live_users[user]['name']).upper(),'color':'red'},broadcast=True)
+
 
 
 if __name__=="__main__":
-    socket.run(app,host="0.0.0.0",port=5000,allow_unsafe_werkzeug=True,debug=True)
+    socket.run(app,host="0.0.0.0",port=5000,allow_unsafe_werkzeug=True)
