@@ -79,7 +79,7 @@ def load_user(id):
 @app.route('/',methods=['GET','POST'])
 def login():
     if request.method=="POST":
-        flow = flow_create('https://prescriptive-nonstrategically-mae.ngrok-free.dev/callback')
+        flow = flow_create('https://live-chating-app.onrender.com/callback')
         authorization_url, state = flow.authorization_url(
                 access_type = "offline",
                 include_granted_scopes='true',
@@ -98,7 +98,7 @@ def login():
 # This route handle the google login process when return the app .
 @app.route('/callback')
 def callback():
-    flow = flow_create('https://prescriptive-nonstrategically-mae.ngrok-free.dev/callback')
+    flow = flow_create('https://live-chating-app.onrender.com/callback')
     
     flow.fetch_token(authorization_response=request.url)
 
