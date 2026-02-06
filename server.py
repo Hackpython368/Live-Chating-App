@@ -28,8 +28,6 @@ with open('client_secret.json','w') as f:
     data = json.loads(os.getenv("GOOGLE"))
     json.dump(data,f)
 
-###### Remove on the production  Please
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 
