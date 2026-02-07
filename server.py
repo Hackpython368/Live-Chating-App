@@ -12,7 +12,7 @@ import uuid # Imported to generate unique id for each message by the user
 from datetime import datetime 
 import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
-
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
 # This Function help to load the .env variable to configure with system variable which help to loaded by the python os.getenv() function .
