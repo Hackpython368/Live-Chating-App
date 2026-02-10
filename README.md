@@ -1,20 +1,59 @@
-# 💬 Live-Chat-App
+# 💬 Live-Chat-App (v2)
 
 Live-Chat-App is a real-time web-based chat application built using **Flask**, **Flask-SocketIO**, and **Flask-Login**.  
-The project demonstrates real-time communication, user session management, and a mobile-first responsive UI.
+The project demonstrates real-time communication, authentication, user session management, and a responsive UI designed for both mobile and desktop environments.
+
+Version 2 introduces user presence tracking, editable messages, improved UI stability, theme customization, and Google authentication.
 
 ---
 
 ## 🚀 Features
 
-- 🔐 Username-based login system
+### ✅ Core Features
+- 🔐 User authentication system
 - 🧠 Session management using Flask-Login
 - ⚡ Real-time messaging with WebSockets (Socket.IO)
-- 📡 Message broadcasting to all connected users
-- 👤 Secure username handling using server-side sessions
-- 📱 Mobile-first responsive chat UI
-- 💻 Desktop-friendly fallback layout
+- 📡 Message broadcasting to connected users
+- 👤 Secure user identification using server-side sessions
 - ⌨️ Send messages using the Enter key
+
+### 🆕 Version 2 Features
+- 🟢 **User Status Indicator**
+  - Online / Offline presence tracking
+  - Real-time status updates using heartbeat logic
+
+- ✏️ **Editable Messages**
+  - Messages can only be edited by the original sender
+  - Server-side validation ensures message ownership
+
+- 🎨 **Redesigned UI**
+  - Improved layout stability on desktop and mobile devices
+  - Better message alignment and responsiveness
+  - Cleaner and more consistent chat interface
+
+- 🌗 **Dark / Light Theme Toggle**
+  - User-controlled theme switching
+  - Improved readability for different environments
+
+- 🔑 **Google Authentication**
+  - Secure login using Google OAuth
+  - Simplified and faster user onboarding
+
+---
+## 📦 Version History
+
+### ✅ v2.0 (Current)
+- User online/offline status
+- Editable messages (owner-only)
+- UI redesign for desktop and mobile stability
+- Dark / Light theme toggle
+- Google authentication integration
+
+###  v1.0
+- Real-time messaging using Flask-SocketIO
+- Username-based authentication
+- Session management with Flask-Login
+- Broadcast messaging
 
 ---
 
@@ -36,7 +75,8 @@ The project demonstrates real-time communication, user session management, and a
 ---
 
 ## 📁 Project Structure
-```
+
+```bash
 Live-Chat-App/
 │
 ├── server.py
@@ -47,14 +87,13 @@ Live-Chat-App/
 │ └── chat.html # Chat page
 │
 ├── static/
-│ |__ css # Mobile-first styling
-|       |___ style.css
-| 
+│ └── css/
+│ └── style.css 
 │
 └── README.md
-
-
 ```
+
+---
 
 ## ⚙️ Installation & Setup
 
@@ -63,47 +102,54 @@ Live-Chat-App/
 git clone https://github.com/your-username/Live-Chat-App.git
 cd Live-Chat-App
 ```
+
 ### 2️⃣ Create a virtual environment (recommended)
-```bash
+
+```python
 python -m venv venv
 source venv/bin/activate   # Linux / Mac
 venv\Scripts\activate      # Windows
 ```
+
+
 ### 3️⃣ Install dependencies
-```bash
+
+```python 
 pip install -r requirements.txt
 ```
 
+
 ### 4️⃣ Run the application
 ```bash
-python app.py
+python server.py
 ```
-or (recommended for Socket.IO support):
-```bash
-python -m eventlet app.py
-```
+
 ### 🌐 Open in Browser
-```
+
+```bash
 http://127.0.0.1:5000
 ```
+
 ---
-### 🔑 How Authentication Works
-- Users log in using a username only
+# 🔑 Authentication Flow
 
-- Flask-Login creates and manages the session
+- Users authenticate using Google OAuth or username session
 
-- User identity is stored securely on the server
+- Flask-Login manages user sessions securely
 
-- current_user.username is used in:
+- User identity is stored server-side
 
-  - Flask routes
+- current_user is used in:
 
-  - Socket.IO events
+- Flask routes
 
-- Username is never trusted from client-side JavaScript
----
-### 🔄 Real-Time Messaging Flow
-```pgsql
+- Socket.IO events
+
+- User identity is never trusted from client-side JavaScript
+
+# 🔄 Real-Time Messaging Flow
+
+```bash
 User Login
    ↓
 Session Created
@@ -114,59 +160,105 @@ Message Sent from Client
    ↓
 Server identifies current_user
    ↓
-Message broadcast to all users
+Message broadcast to users
 ```
----
-### 📱 Responsive Design
+
+
+## 🟢 User Presence System
+
+- Users send periodic heartbeat signals
+
+- Server updates online/offline status
+
+- Status changes are reflected in real time
+
+- Handles reconnect scenarios when network drops
+
+## 📱 Responsive Design
+
 - Mobile-first design approach
 
 - Full-screen chat interface on phones
 
-- Centered chat container on desktop/laptop
+- Optimized layout for desktop/laptop
 
-- Optimized input to prevent mobile auto-zoom
+- Stable input handling on mobile devices
 
 - Left/right aligned chat bubbles for clarity
 
----
-### 🚧 Known Limitations
-- No database integration (messages are not persisted)
+## 🚧 Known Limitations
 
-- Broadcast-only chat (no private rooms)
+- Messages are not permanently stored in a database
 
-- Username-only authentication (no passwords)
+- Broadcast-only chat (no private rooms yet)
 
-- These limitations are intentional for learning and simplicity.
----
-### 🔮 Future Improvements
+- No media support
 
-- 🗄️ Database integration (MySQL / PostgreSQL)
+- Designed primarily for learning and architecture understanding
+
+## 🔮 Future Improvements (v3 Roadmap)
+
+- 🗄️ Database message persistence
 
 - 👥 Private and group chat rooms
 
-- 🟢 Online/offline user indicator
+- 📎 Media file sharing
 
 - ✔✔ Message delivery and read receipts
 
-- 🔐 Password-based authentication
+- 📞 Call signaling support
 
 - ☁️ Production deployment (Render / Fly.io)
+
+- 🤝 Contributors
+
 ---
-### 🤝 Contributing
-1. Contributions are welcome!
+## 🤝 Contributors
 
-2. Fork the repository
+<div align="center">
 
-3. Create a new branch
+<table>
+<tr>
 
-4. Commit your changes
+<td align="center">
+<a href="https://github.com/hackpython368">
+<img src="https://github.com/hackpython368.png" width="100px;" style="border-radius:50px;" alt="Vidya Prakash Pandey"/>
+<br />
+<b>Vidya Prakash Pandey</b>
+</a>
+</td>
 
-5. Open a pull request
+<td align="center">
+<a href="https://github.com/shishir282006">
+<img src="https://github.com/shishir282006.png" width="100px;" style="border-radius:50px;" alt="Contributor Name"/>
+<br />
+<b>Contributor Tushar Srivastava</b>
+</a>
+</td>
+
+<td align="center">
+<a href="https://github.com/shaluyadav25">
+<img src="https://github.com/shaluyadav25.png" width="100px;" style="border-radius:50px;" alt="Contributor Name"/>
+<br />
+<b>Contributor Shalu Yadav</b>
+</a>
+</td>
+
+</tr>
+</table>
+
+</div>
+
+
+Want to contribute? Feel free to fork the repository and open a pull request.
+
 ---
-### 📜 License
+
+## 📜 License
+
 This project is licensed under the MIT License.
 
-✨ Author
-Built with ❤️ to learn and demonstrate real-time web communication, session handling, and WebSocket-based messaging using Flask.
-
 ---
+## ✨ Author
+
+Built with ❤️ to learn and demonstrate real-time web communication, authentication, session handling, and WebSocket-based messaging using Flask.

@@ -2,95 +2,679 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Chat | Your App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{url_for('static',filename='css/style.css')}}">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    /* =====================
+   THEME VARIABLES (BRAND: YELLOW / BLACK / GREY)
+===================== */
+    :root {
+      /* Backgrounds */
+      --bg-main: #f4f4f4;
+      /* light grey page bg */
+      --bg-app: #ffffff;
+      /* app surface */
+      --bg-muted: #eeeeee;
+      /* chat background */
 
-    <title>Chat Room</title>
-    <link rel="stylesheet" href="{{ url_for('static',filename='css/style.css')}}" />
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+      /* Sidebar */
+      --sidebar-bg: #0f0f0f;
+      /* black */
+      --sidebar-item: #1c1c1c;
+      /* dark grey */
+
+      /* Brand */
+      --primary: #f5c542;
+      /* yellow */
+      --primary-soft: #fff3c4;
+      /* soft yellow */
+
+      /* Text */
+      --text-main: #1a1a1a;
+      /* dark text */
+      --text-light: #ffffff;
+      /* white text */
+      --text-muted: #7a7a7a;
+      /* grey text */
+
+      /* UI */
+      --border: #d6d6d6;
+      /* light grey border */
+      --popup-bg: #0f0f0f;
+      /* black popup */
+    }
+
+    [data-theme="dark"] {
+      /* Backgrounds */
+      --bg-main: #0f0f0f;
+      /* pure black */
+      --bg-app: #161616;
+      /* dark surface */
+      --bg-muted: #1f1f1f;
+      /* chat bg dark */
+
+      /* Sidebar */
+      --sidebar-bg: #000000;
+      /* black */
+      --sidebar-item: #151515;
+      /* dark grey */
+
+      /* Brand */
+      --primary: #f5c542;
+      /* yellow (same for consistency) */
+      --primary-soft: #3a320f;
+      /* muted yellow for dark mode */
+
+      /* Text */
+      --text-main: #e6e6e6;
+      /* light text */
+      --text-light: #ffffff;
+      --text-muted: #9a9a9a;
+
+      /* UI */
+      --border: #2a2a2a;
+      /* dark border */
+      --popup-bg: #000000;
+      /* black popup */
+    }
 
 
+    /* =====================
+       GLOBAL
+    ===================== */
+    * {
+      box-sizing: border-box;
+      font-family: "Inter", system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: var(--bg-main);
+      color: var(--text-main);
+    }
+
+    /* =====================
+       APP (FULL SCREEN)
+    ===================== */
+    .app {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      background: var(--bg-app);
+    }
+
+    /* =====================
+       USERS SIDEBAR (DESKTOP)
+    ===================== */
+    .users-sidebar {
+      width: 20%;
+      min-width: 240px;
+      background: var(--sidebar-bg);
+      color: var(--text-light);
+      padding: 16px;
+    }
+
+    .users-sidebar h3 {
+      margin-top: 0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .user-item {
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      background: var(--sidebar-item);
+      font-size: 14px;
+    }
+
+    /* =====================
+       CHAT
+    ===================== */
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      height: 60px;
+      background: linear-gradient(90deg, var(--primary), #818cf8);
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-weight: 600;
+    }
+
+    .users-btn {
+      display: none;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* =====================
+       MESSAGES
+    ===================== */
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background: var(--bg-muted);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .message.own {
+      align-self: flex-end;
+      background: var(--bg-muted);
+    }
+
+    .message.other {
+      align-self: flex-start;
+      background: var(--bg-muted);
+      border-radius: 12px 12px 12px 4px;
+    }
+
+    .message strong {
+      display: block;
+      font-size: 11px;
+      margin-bottom: 4px;
+      color: var(--primary);
+    }
+
+    /* =====================
+       INPUT
+    ===================== */
+    .chat-input {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-app);
+    }
+
+    .chat-input input {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-app);
+      color: var(--text-main);
+      outline: none;
+    }
+
+    .chat-input button {
+      margin-left: 10px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+
+    .users-conneted {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* =====================
+       POPUP (RIGHT)
+    ===================== */
+    #floatingBox {
+      position: fixed;
+      left: 20px;
+      right: auto;
+      bottom: 20px;
+      background: var(--popup-bg);
+      color: var(--text-light);
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      z-index: 999;
+    }
+
+    #floatingBox.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* =====================
+       THEME TOGGLE
+    ===================== */
+    .theme-toggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: var(--bg-app);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+
+    .active{
+      color: green;
+    }
+
+    .deactive{
+      color: red;
+    }
+
+
+    .slider{
+      display: none;
+      padding: 10px;
+      background: transparent;
+      border: none;
+    }
+
+    .slider:hover{
+      background: transparent;
+    }
+    /* =====================
+       MOBILE
+    ===================== */
+    @media (max-width: 767px) {
+      .slider {
+        display: inline-block;
+      }
+
+      .users-sidebar{
+        display: none;
+      }
+
+      .slide{
+        display: inline-block;
+        transition:all 0.3s ease-in;
+      }
+    }
+  </style>
 </head>
 
-<body>
-    <div class="chat-container">
-        <header class="chat-header">
-            <span id="userDisplay">Login in as <span id="username">{{username}}</span></span>
-        </header>
+<body data-theme="light">
 
-        <div class="chat-messages" id="messages"></div>
+  <button class="theme-toggle" onclick="toggleTheme()">🌗</button>
 
-        <div class="chat-input">
-            <input type="text" id="messageInput" placeholder="Type your message..." />
-            <button id="send-btn" onclick="sendMessage()" type="submit">Send</button>
-        </div>
+  <div class="app">
+
+    <!-- USERS (DESKTOP) -->
+    <div class="users-sidebar" id="users">
+      <h3>Connected</h3>
+      <div class="users-conneted" id="liveUser">
+          
+      </div>
+
     </div>
-    <div id="floatingBox">
-        
+
+    <!-- CHAT -->
+    <div class="chat-main">
+      <div class="chat-header">
+        <span id="username"><button id="slider" class="slider"><i class="fa-solid fa-bars"></i></button>{{ username }}</span>
+        <button class="users-btn">Users</button>
+      </div>
+
+      <div class="chat-messages" id="messages"></div>
+
+      <div class="chat-input">
+
+        <input type="text" id="message-input" placeholder="Write a message…" required />
+        <button onclick="sendMessage()">send</button>
+      </div>
+    </div>
+  </div>
+
+  <span id="floatingBox"></span>
+
+
+  <!-- Edit Modal -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <h3>Edit Message</h3>
+      <input type="text" id="edit-input" />
+      <div class="modal-buttons">
+        <button class="btn" id="save-edit-btn">Save</button>
+        <button class="btn" id="cancel-edit-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="modal">
+    <div class="modal-content">
+      <h3>Delete Message</h3>
+      <p style="margin: 16px 0; color: #2c3e50;">Are you sure you want to delete this message?</p>
+      <div class="modal-buttons">
+        <button class="btn" id="confirm-delete-btn">Delete</button>
+        <button class="btn" id="cancel-delete-btn">Cancel</button>
+      </div>
     </div>
 
 
     <script>
-        const inputfield = document.getElementById('messageInput')
-        const username = document.getElementById('username').textContent.trim()
-        const socket = io();
 
-        function push_on_screen(msg, username, self = false) {
-            const msgDiv = document.createElement("div");
-            if (self == false) {
-                msgDiv.className = "message other";
-            } else {
-                msgDiv.className = "message own";
-            }
-            msgDiv.innerHTML = `<strong>${username}</strong><br>${msg}`;
+      function toggleTheme() {
+        document.body.dataset.theme =
+          document.body.dataset.theme === "dark" ? "light" : "dark";
+      }
 
-            document.getElementById("messages").appendChild(msgDiv);
+      const socket = io();
+      const username = "{{ username }}";
+      const messagesContainer = document.getElementById('messages');
+      const messageInput = document.getElementById('message-input');
+      const editModal = document.getElementById('edit-modal');
+      const editInput = document.getElementById('edit-input');
+      const saveEditBtn = document.getElementById('save-edit-btn');
+      const cancelEditBtn = document.getElementById('cancel-edit-btn');
+      const deleteModal = document.getElementById('delete-modal');
+      const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+      const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+      let editingMessageId = null;
+      let deletingMessageId = null;
+
+      setInterval(()=>{
+        socket.emit('heartbeat');
+      },10000)
+      
+      setInterval(()=>{
+        socket.emit('check-active-user')
+      },30000)
+
+
+      const sliderbtn = document.getElementById('slider')
+
+      sliderbtn.addEventListener('click',()=>{
+          document.getElementById('users').classList.toggle('slide');
+      })
+      
+      
+      // Send message
+      function sendMessage() {
+        const msg = messageInput.value.trim();
+        if (msg) {
+          socket.emit('send_msg', msg);
+          messageInput.value = '';
+        }
+      }
+
+      messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+
+      // Receive message
+      socket.on('recv', (data) => {
+        addMessage(data);
+      });
+
+      // Add message to chat
+      function addMessage(data) {
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = `message ${data.username === username ? 'own' : 'other'}`;
+        messageWrapper.id = `msg-${data.id}`;
+
+        // Add username above message
+        const usernameLabel = document.createElement('div');
+        usernameLabel.className = 'message-username';
+        usernameLabel.textContent = data.username;
+        messageWrapper.appendChild(usernameLabel);
+
+        // Message container for content and menu
+        const messageContainer = document.createElement('div');
+        messageContainer.className = 'message-container';
+
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        messageText.textContent = data.msg;
+
+        const messageMeta = document.createElement('div');
+        messageMeta.className = 'message-meta';
+
+        const timestamp = document.createElement('span');
+        timestamp.className = 'message-time';
+        timestamp.textContent = data.timestamp || '';
+
+        messageContent.appendChild(messageText);
+
+        if (data.edited) {
+          const editedBadge = document.createElement('span');
+          editedBadge.className = 'edited-badge';
+          editedBadge.textContent = 'edited';
+          messageText.appendChild(editedBadge);
         }
 
-        inputfield.addEventListener('keyup',(event) => {
-            if (document.visibilityState==="visible"){
-                socket.emit('user-typing',username);
-            }
+        messageMeta.appendChild(timestamp);
+        messageContent.appendChild(messageMeta);
 
-        });
+        // Add three-dot menu only for own messages
+        if (data.username === username) {
+          const menuContainer = document.createElement('div');
+          menuContainer.className = 'message-menu-container';
 
-        inputfield.addEventListener('keydown', (event) => {
-            if (event.key == 'Enter') {
-                sendMessage();
-            }
-        });
+          const menuBtn = document.createElement('button');
+          menuBtn.className = 'menu-btn';
+          menuBtn.innerHTML = '⋯';
+          menuBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleMenu(menuBtn);
+          };
 
-        function sendMessage() {
-            const msg = inputfield.value.trim()
-            inputfield.value = ""
-            if(msg!=""){
-                socket.emit('send_msg', msg)
-            }
+          const menu = document.createElement('div');
+          menu.className = 'message-menu';
+          menu.innerHTML = `
+          <button class="menu-item" onclick="editMessage('${data.id}')">Edit</button>
+          <button class="menu-item" onclick="deleteMessage('${data.id}')">Delete</button>
+        `;
+
+          menuContainer.appendChild(menuBtn);
+          menuContainer.appendChild(menu);
+          messageContainer.appendChild(menuContainer);
         }
 
-        socket.on('recv', (msg) => {
-            if (username == msg.username) {
-                self = true;
-            } else {
-                self = false;
+        messageContainer.appendChild(messageContent);
+        messageWrapper.appendChild(messageContainer);
+        messagesContainer.appendChild(messageWrapper);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+
+      // Toggle menu
+      function toggleMenu(btn) {
+        const menus = document.querySelectorAll('.message-menu');
+        menus.forEach(m => {
+          if (m !== btn.nextElementSibling) {
+            m.classList.remove('show');
+          }
+        });
+        const menu = btn.nextElementSibling;
+        menu.classList.toggle('show');
+      }
+
+      // Close menus when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.message-menu-container')) {
+          document.querySelectorAll('.message-menu').forEach(m => m.classList.remove('show'));
+        }
+      });
+
+      // Edit message
+      window.editMessage = function (messageId) {
+        const messageDiv = document.getElementById(`msg-${messageId}`);
+        const messageText = messageDiv.querySelector('.message-text');
+        const currentText = messageText.textContent.replace('edited', '').trim();
+
+        editingMessageId = messageId;
+        editInput.value = currentText;
+        editModal.style.display = 'flex';
+
+        document.querySelectorAll('.message-menu').forEach(m => m.classList.remove('show'));
+      };
+
+      messageInput.addEventListener('keyup', () => {
+        socket.emit('user-typing');
+      });
+
+      saveEditBtn.addEventListener('click', () => {
+        if (editingMessageId && editInput.value.trim()) {
+          socket.emit('edit_msg', {
+            id: editingMessageId,
+            msg: editInput.value.trim()
+          });
+          editModal.style.display = 'none';
+          editingMessageId = null;
+        }
+      });
+
+      cancelEditBtn.addEventListener('click', () => {
+        editModal.style.display = 'none';
+        editingMessageId = null;
+      });
+
+      // Delete message
+      window.deleteMessage = function (messageId) {
+        deletingMessageId = messageId;
+        deleteModal.style.display = 'flex';
+        document.querySelectorAll('.message-menu').forEach(m => m.classList.remove('show'));
+      };
+
+      confirmDeleteBtn.addEventListener('click', () => {
+        if (deletingMessageId) {
+          socket.emit('delete_msg', { id: deletingMessageId });
+          deleteModal.style.display = 'none';
+          deletingMessageId = null;
+        }
+      });
+
+      cancelDeleteBtn.addEventListener('click', () => {
+        deleteModal.style.display = 'none';
+        deletingMessageId = null;
+      });
+
+      // Handle edited message
+      socket.on('msg_edited', (data) => {
+        const messageDiv = document.getElementById(`msg-${data.id}`);
+        if (messageDiv) {
+          const messageText = messageDiv.querySelector('.message-text');
+          // Remove existing edited badge if any
+          const existingBadge = messageText.querySelector('.edited-badge');
+          if (existingBadge) {
+            existingBadge.remove();
+          }
+
+          // Update message text
+          const textNode = messageText.childNodes[0];
+          if (textNode && textNode.nodeType === 3) {
+            textNode.textContent = data.msg;
+          } else {
+            messageText.textContent = data.msg;
+          }
+
+          // Add edited badge
+          const editedBadge = document.createElement('span');
+          editedBadge.className = 'edited-badge';
+          editedBadge.textContent = 'edited';
+          messageText.appendChild(editedBadge);
+        }
+      });
+
+      // Handle deleted message
+      socket.on('msg_deleted', (data) => {
+        const messageDiv = document.getElementById(`msg-${data.id}`);
+        if (messageDiv) {
+          messageDiv.style.transition = 'opacity 0.3s';
+          messageDiv.style.opacity = '0';
+          setTimeout(() => {
+            if (messageDiv && messageDiv.parentNode) {
+              messageDiv.remove();
             }
-            push_on_screen(msg.msg, msg.username, self)
+          }, 300);
+        }
+      });
+
+      socket.on('handle-typing',(data) => {
+        const box = document.getElementById('floatingBox');
+        box.innerText = `✍️ ${data.user} is typing`;
+        box.classList.add('show');
+        setTimeout(()=>{
+          box.classList.remove('show');
+        },5000);
+      })
+
+      socket.on('add-users',(data)=>{
+        const userbox = document.getElementById('liveUser')
+        userbox.innerHTML = ''
+
+        data.connection.forEach((name)=>{
+          userbox.innerHTML +=  `<div class="user_container" style="background-color: #1f1f1f; padding: 5px 10px; border-radius: 10px; margin:4px 0px">
+        <h3 id="username" style="margin: 0px;">${name}</h3>
+        <span id="status" class="deactive" style="color: red;"> offline</span>
+      </div>`
         })
 
+      })
 
-        socket.on('connection-found', (data) => {
-            const box = document.getElementById("floatingBox");
-            box.classList.add('show')
-            if (data['type']=='typing'){
-                box.textContent = "🙌 " + data['user'] + " is typing !"
-            }else{
+      socket.on('status', (data) => {
 
-                box.textContent = "😎 " + data['user'] + " Join the Chat!!";
-            }
-            setTimeout(()=>{
-                box.classList.remove('show')
-            },5000)
-        })
+    const userbox = Array.from(
+        document.getElementById('liveUser').children
+    );
+
+    userbox.forEach((div) => {
+
+        const username = div.querySelector('#username');
+        const status = div.querySelector('#status');
+        
+        if (username.innerText === data.user) {
+
+            status.innerText = data.status;
+
+            status.style.color = data.color;
+        }
+    });
+});
+
+
+      // Create Connection handler 
+      socket.on('connection-found', (data) => {
+        const box = document.getElementById("floatingBox");
+        box.textContent = `👋 ${data.user} joined`;
+        box.classList.add('show');
+        setTimeout(() => box.classList.remove('show'), 3000);
+      })
     </script>
 </body>
 
