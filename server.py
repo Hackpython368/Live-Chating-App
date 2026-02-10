@@ -12,7 +12,7 @@ import uuid # Imported to generate unique id for each message by the user
 from datetime import datetime 
 import google_auth_oauthlib.flow
 from googleapiclient.discovery import build
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 # This Function help to load the .env variable to configure with system variable which help to loaded by the python os.getenv() function .
@@ -59,6 +59,7 @@ class Client(UserMixin):
 
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.config['SECRET_KEY'] = os.getenv('SECRETKEY')
 
 
