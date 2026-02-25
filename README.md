@@ -5,6 +5,11 @@ The project demonstrates real-time communication, authentication, user session m
 
 Version 2 introduces user presence tracking, editable messages, improved UI stability, theme customization, and Google authentication.
 
+## Live Demo 👀
+
+>> Link : - https://live-chating-app.onrender.com/
+
+Note - Kindly wait for 2 to 5 min for website to be live since hosted on the free platform need cold start.
 ---
 
 ## 🚀 Features
@@ -256,7 +261,7 @@ Want to contribute? Feel free to fork the repository and open a pull request.
 
 ## 📜 License
 
-This project is licensed under the MIT License.
+This project is licensed under the Apache License 2.0.
 
 ---
 ## ✨ Author
