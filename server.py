@@ -20,7 +20,7 @@ load_dotenv()
 
 
 # making conncection with the database using the URL .
-_db_engine = create_engine(os.getenv("URL"),poolclass=NullPool,connect_args={'sslmode':'require'})
+_db_engine = create_engine(os.getenv("URL"),poolclass=NullPool,connect_args={'sslmode':'require','connect_timeout':10})
 
 
 # Creating JSON file to pass in the google Auth .
@@ -93,6 +93,15 @@ def login():
         return redirect(authorization_url)
         
     return render_template('index.html')
+
+
+@app.route("/dbtest")
+def dbtest():
+    try:
+        with _db_engine.connect() as conn:
+            return "DB connection successful"
+    except Exception as e:
+        return str(e)
 
 
 
