@@ -131,7 +131,7 @@ def callback():
     login_user(user)
     
     with _db_engine.connect() as f:
-        result = f.execute(text(f"select name,email from user_info where id='{user_info['id']}'"))
+        result = f.execute(text(f"select name,email from users where id='{user_info['id']}'"))
         if result.fetchone():
             live_users[current_user.get_id()] = {
                 'name' : user_info['name'],
@@ -139,7 +139,7 @@ def callback():
                 'status': 'online'
             }
         else:
-            f.execute(text(f"INSERT INTO USER_INFO (ID, NAME,EMAIL,PROFILE) VALUES('{user_info['id']}','{user_info['name']}','{user_info['email']}','{user_info['picture']}');"))
+            f.execute(text(f"INSERT INTO USERS(ID, NAME,EMAIL,PROFILE) VALUES('{user_info['id']}','{user_info['name']}','{user_info['email']}','{user_info['picture']}');"))
             f.commit()
 
     
@@ -154,7 +154,7 @@ def chat():
         username = live_users[current_user.get_id()]['name']
     except:
         with _db_engine.connect() as f:
-            result = f.execute(text(f"select name,email from user_info where id='{current_user.get_id()}';"))
+            result = f.execute(text(f"select name,email from users where id='{current_user.get_id()}';"))
             data = result.fetchone()
             if not data:
                 return abort(401)
@@ -177,7 +177,7 @@ def chat():
 def handle_connection():
     if current_user.get_id() not in live_users.keys():
         with _db_engine.connect() as f:
-            result = f.execute(text(f"select name,email from user_info where id='{current_user.get_id()}';"))
+            result = f.execute(text(f"select name,email from users where id='{current_user.get_id()}';"))
             data = result.fetchone()
             username,email = data
             live_users[current_user.get_id()]={
@@ -191,7 +191,7 @@ def handle_connection():
         emit('connection-found',data,broadcast=True)
     else:
         with _db_engine.connect() as f:
-            result = f.execute(text("SELECT NAME FROM USER_INFO"))
+            result = f.execute(text("SELECT NAME FROM USERS"))
             data = result.fetchall()
             user = []
             for i in data:
