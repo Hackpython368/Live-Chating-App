@@ -2,9 +2,5 @@ flask
 flask_socketio
 flask_login
 sqlalchemy
-os
-dotenv
-json
-datetime
 google_auth_oauthlib
 werkzeug
