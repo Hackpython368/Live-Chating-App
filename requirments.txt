@@ -4,3 +4,4 @@ flask_login
 sqlalchemy
 google_auth_oauthlib
 werkzeug
+dotenv
