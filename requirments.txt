@@ -2,7 +2,6 @@ flask
 flask_socketio
 flask_login
 sqlalchemy
-sqlalchemy.pool
 os
 dotenv
 json
