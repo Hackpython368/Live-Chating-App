@@ -5,3 +5,4 @@ sqlalchemy
 google_auth_oauthlib
 werkzeug
 dotenv
+googleapiclient
