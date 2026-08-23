@@ -1,8 +1,0 @@
-flask
-flask_socketio
-flask_login
-sqlalchemy
-google_auth_oauthlib
-werkzeug
-dotenv
-googleapiclient
