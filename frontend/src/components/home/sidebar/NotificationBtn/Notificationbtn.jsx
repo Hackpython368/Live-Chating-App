@@ -6,14 +6,14 @@ const Notificationbtn = (pars) => {
 
         return (
             <>
-                <div className='bg-white'>
+                <div className='bg-[#F5F7F4]'>
 
             <div className='w-full h-4 bg-[#3A205D] rounded-br-2xl'>
 
             </div>
             <div className='flex justify-between bg-[#3A205D]'>
                 <div></div>
-                <div className='bg-white w-5/6 px-5 rounded-l-4xl'>
+                <div className='bg-[#F5F7F4] w-5/6 px-5 rounded-l-4xl'>
 
                     <IoIosNotifications className='text-4xl text-black h-10 rounded-4xl ' />
                 </div>
@@ -27,7 +27,7 @@ const Notificationbtn = (pars) => {
     }else{
         return (
             <>
-            <div className='bg-white'>
+            <div className='bg-[#3A205D]'>
 
             <div className='w-full h-4 bg-[#3A205D]'>
 

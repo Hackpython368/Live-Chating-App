@@ -27,7 +27,7 @@ const Settingbtn = (pars) => {
     } else {
         return (
             <>
-                <div className='bg-white'>
+                <div className='bg-[#3A205D]'>
 
                     <div className='w-full h-4 bg-[#3A205D]'>
 
